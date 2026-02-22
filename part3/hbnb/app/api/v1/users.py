@@ -6,7 +6,8 @@ api = Namespace('users', description='User operations')
 user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
-    'email': fields.String(required=True, description='Email of the user')
+    'email': fields.String(required=True, description='Email of the user'),
+    'password': fields.String(required=True, description='Password of the user')
 })
 
 user_registration_model = api.model('UserRegistration', {
@@ -42,7 +43,8 @@ class UserList(Resource):
             'id': u.id,
             'first_name': u.first_name,
             'last_name': u.last_name,
-            'email': u.email
+            'email': u.email,
+            'password': u.password
         } for u in users], 200
 
 @api.route('/<user_id>')
@@ -58,7 +60,7 @@ class UserResource(Resource):
             'id': user.id,
             'first_name': user.first_name,
             'last_name': user.last_name,
-            'email': user.email
+            'email': user.email,
         }, 200
 
     @api.expect(user_model, validate=True)
@@ -75,6 +77,7 @@ class UserResource(Resource):
             'id': updated_user.id,
             'first_name': updated_user.first_name,
             'last_name': updated_user.last_name,
-            'email': updated_user.email
+            'email': updated_user.email,
+            'password': updated_user.password
         }, 200
 
