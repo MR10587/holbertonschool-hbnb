@@ -63,11 +63,13 @@ class UserResource(Resource):
             'email': user.email,
         }, 200
 
+    @jwt_required()
     @api.expect(user_model, validate=True)
     @api.response(200, 'User successfully updated')
     @api.response(404, 'User not found')
     @api.response(400, 'Invalid input data')
     def put(self, user_id):
+        current_user = get_jwt_identity()
         """Update user information"""
         user_data = api.payload
         updated_user = facade.update_user(user_id, user_data)

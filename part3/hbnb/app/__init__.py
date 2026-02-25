@@ -8,7 +8,6 @@ from bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 
 jwt = JWTManager()
-
 bcrypt = Bcrypt()
 
 def create_app(config_class = "config.DevelopmentConfig"):

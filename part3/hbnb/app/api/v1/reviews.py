@@ -13,10 +13,12 @@ review_model = api.model('Review', {
 
 @api.route('/')
 class ReviewList(Resource):
+    @jwt_required()
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
+        current_user = get_jwt_identity()
         """Register a new review"""
         review_data = api.payload
         try:
@@ -70,11 +72,14 @@ class ReviewResource(Resource):
             'user_id': data.user.id,
             'place_id': data.place.id
         }, 200
+    
+    @jwt_required()
     @api.expect(review_model)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
     def put(self, review_id):
+        current_user = get_jwt_identity()
         """Update a review's information"""
         review_update = api.payload
         try:
@@ -85,9 +90,11 @@ class ReviewResource(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+    @jwt_required()
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
     def delete(self, review_id):
+        current_user = get_jwt_identity()
         """Delete a review"""
         review_delete = facade.get_review(review_id)
         if not review_delete:
