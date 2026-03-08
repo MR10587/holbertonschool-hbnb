@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('places', description='Place operations')
 
@@ -39,14 +39,16 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+
     @jwt_required()
     @api.expect(place_model)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
-        current_user = get_jwt_identity()
+        current_user_id = get_jwt_identity()
         """Register a new place"""
         place_data = api.payload
+        place_data['owner_id'] = current_user_id
         try:
             new_place = facade.create_place(place_data)
             return {
@@ -99,15 +101,29 @@ class PlaceResource(Resource):
             ]
         }, 200
 
-    @jwt_required()
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
     def put(self, place_id):
         current_user = get_jwt_identity()
+        claims = get_jwt()
+        is_admin = claims.get('is_admin', False)
+        place = facade.get_place(place_id)
+
+        if not place:
+            return {'error': 'Place not found'}, 404
+
+        if not is_admin and str(place.owner.id) != str(current_user):
+            return {'error': 'Unauthorized action'}, 403
+
         """Update a place's information"""
         place_data = api.payload
+
+        if "owner_id" in place_data:
+            place_data.pop("owner_id")
         try:
             updated_place = facade.update_place(place_id, place_data)
             if not updated_place:
@@ -135,5 +151,5 @@ class PlaceReviewList(Resource):
             'id': review.id,
             'text': review.text,
             'rating': review.rating,
-            'user_id': review.user.id
+            'user_id': review.author.id
         } for review in place.reviews], 200
