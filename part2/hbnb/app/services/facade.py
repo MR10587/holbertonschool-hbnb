@@ -1,4 +1,4 @@
-from app.persistence.facade import InMemoryRepository
+from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.amenitiy import Amenity
 from app.models.place import Place
